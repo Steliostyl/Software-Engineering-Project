@@ -10,10 +10,16 @@ class Stock():
         self.name = name
         self.dailyStockValues = dailyStockValues
 
-    def printStock(self):
-        print('--Stock information--\nName:',self.name, 'Symbol:', self.symbol)
+    def printStock(self, formatted=True):
+        print('--Stock information--\nName:',self.name, '\nSymbol:', self.symbol,'\nDaily Data:')
         for key in self.dailyStockValues:
-            print(key, self.dailyStockValues[key])
+            if formatted==True:
+                formatedMonth = '{:02d}'.format(key.month)
+                formatedDay = '{:02d}'.format(key.day)
+            else:
+                formatedMonth = key.month
+                formatedDay = key.day
+            print(f"{key.year}-{formatedMonth}-{formatedDay} {self.dailyStockValues[key]}")
 
 class Stock_Market():
     def __init__(self, country):
