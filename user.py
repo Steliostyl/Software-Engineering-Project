@@ -1,6 +1,7 @@
 from enum import Enum
 import wallet_carrier
 from datetime import datetime, date
+import transactions
 
 def addYears(d, years):
     try:
@@ -36,13 +37,36 @@ class User():
         self.planExpDate = addYears(datetime.now(), 1)
         self.tradingHistory = [] # A list of transactions
 
-    def getUserTransactions(self, filter=None):
-        if filter == None:
+    def getUserTransactions(self, start=None):
+        if start == None:
             return self.tradingHistory
-        # else:
+        #else:
+        #    filteredTable = []
+        #    for transaction in self.tradingHistory:
+        #        if transaction.dateTime 
+        
+    def buy(self, itemsToBuy):
+        transactionList = []
+        # itemsToBuy = Dictionary with the stock/crypto object as key and a tuple 
+        # consisted of (ammount, public) as value
+        for item in itemsToBuy:
+            transactionList.append(transactions.Transaction(self, item, itemsToBuy[item][0],itemsToBuy[item][1]))
 
-kypr = User('kypr','kyprianosmantis@gmail.com', '123456')
-kypr2 = User('kypr2','kyprianosmantis@gmail.com', '123456')
+        print('Choose payment method from wallet:')
+        self.wallet.printPaymentMethods()
+        pm = int(input()) - 1
+        while pm not in range(len(self.wallet.accounts)):
+            print('Please choose a valid option!')
+            pm = int(input()) - 1
+        #self.wallet.accounts[list(self.wallet.accounts)[pm]].printAccount()
+        transactions.Payment.setPayment(self, pm, transactionList)
+        #self.wallet.accounts[list(self.wallet.accounts)[pm]].pay()
+        #Payment.setPayment(self, paymentMethod, transactionList)
+
+#kypr = User('kypr','kyprianosmantis@gmail.com', '123456')
+#kypr2 = User('kypr2','kyprianosmantis@gmail.com', '123456')
+
+#kypr.tradingHistory.append(transactions.Transaction(kypr, 10, False))
 
 # Testing to see if the to plans are the same class object
 

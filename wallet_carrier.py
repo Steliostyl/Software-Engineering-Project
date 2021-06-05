@@ -13,6 +13,9 @@ class Account():
         self.carrierName = carrierName #string
         self.balance = balance
     
+    def pay(self, ammount):
+        return carrierDictionary[self.carrierName].chargeAccount((self.ID, self.password), ammount)
+
     def printAccount(self):
         print('Account ID:', self.ID, '\nBalance:', self.balance)
 
@@ -41,6 +44,17 @@ class Carrier():
         else: 
             return response
 
+    def chargeAccount(self, credentials, ammount):
+        if self.verifyCredentials(credentials)[0] == True:
+            if self.accounts[credentials[0]].balance >= ammount :
+                self.accounts[credentials[0]].balance = self.accounts[credentials[0]].balance - ammount
+                print(self.accounts[credentials[0]].balance)
+                return (True, 'Payment successful')
+            else:
+                return (False, 'Not enough funds in account')
+        else:
+            return (False, 'Incorrect Credentials')
+
     def printAllAccounts(self):
         print(self.name)
         for account in self.accounts:
@@ -52,26 +66,27 @@ class Wallet():
         self.accounts = {}
         self.balance = 0
     
-    def getBalance(self):
-        return self.balance()
-    
     def addPaymentMethod(self, carrierName, credentials):
         responseFromCarrier = carrierDictionary[carrierName].getAccountBalance(credentials)
         if responseFromCarrier[0] == True:
-            tmp = Account(carrierName, credentials[0], credentials[1], responseFromCarrier[1])
+            tmp = Account(credentials[0], credentials[1], carrierName, responseFromCarrier[1])
             self.accounts[credentials[0]] = tmp
-            print('Account added successfully.')
+            #print('Account added successfully.')
+
+    def printPaymentMethods(self):
+        c = 0
+        for account in self.accounts:
+            c += 1
+            acc = self.accounts[account]
+            response = carrierDictionary[acc.carrierName].getAccountBalance((acc.ID, acc.password))
+            if response[0] != False:
+                self.accounts[account].balance = response[1]
+                print(f"{c}. {self.accounts[account].carrierName} \nBalance: {self.accounts[account].balance}")
+            else:
+                print("Connection with bank failed.")
 
 # Print every account of every carrier
 def printAllAccountsInAllCarriers():
     for carrier in carrierDictionary:
         carrierDictionary[carrier].printAllAccounts()
-
-Carrier('National Bank of Greece')
-wallet = Wallet()
-nbgAccount = Account(1234567890, 'Qwerty!@34', 'National Bank of Greece', 1000)
-# Add the newly created account to the corresponding carrier's accounts dictionary
-carrierDictionary[nbgAccount.carrierName].accounts[nbgAccount.ID] = nbgAccount 
-wallet.addPaymentMethod('National Bank of Greece',(1234567890, 'Qwerty!@34'))
-
-printAllAccountsInAllCarriers()
+        print()

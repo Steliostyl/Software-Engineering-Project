@@ -11,34 +11,32 @@ datetime_interval = 'day'
 name = 'Bitcoin'
 
 class Crypto_Coin():
-    def __init__(self, name, symbol, dailyCryptoValues):
+    def __init__(self, name, symbol, dailyValues):
         self.symbol = symbol
         self.name = name
-        self.dailyCryptoValues = dailyCryptoValues
+        self.dailyValues = dailyValues
 
     def filterCryptoData(self, startingDate):
         tempDailyCryptoValues = {}
-        for val in self.dailyCryptoValues:
+        for val in self.dailyValues:
             #print(type(val))
             if val>=startingDate :
-                tempDailyCryptoValues[val] = self.dailyCryptoValues[val]
+                tempDailyCryptoValues[val] = self.dailyValues[val]
         return Crypto_Coin(self.name, self.symbol, tempDailyCryptoValues)
 
     def printCrypto(self, formatted=True):
         print('--Crypto Coin information--\nName:',self.name, '\nSymbol:', self.symbol,'\nDaily Data:')
-        for key in self.dailyCryptoValues:
+        for key in self.dailyValues:
             if formatted==True:
                 formatedMonth = '{:02d}'.format(key.month)
                 formatedDay = '{:02d}'.format(key.day)
             else:
                 formatedMonth = key.month
                 formatedDay = key.day
-            print(f"{key.year}-{formatedMonth}-{formatedDay} {self.dailyCryptoValues[key]}")
+            print(f"{key.year}-{formatedMonth}-{formatedDay} {self.dailyValues[key]}")
 
 class Crypto_Market():
     def __init__(self, country):
-        self.country = country
-        self.market_indexes = []
         self.cryptoCoins = {}
         self.getAllCryptoData()
     
@@ -77,9 +75,9 @@ class Crypto_Market():
             print(s, self.cryptoCoins[s].name, self.cryptoCoins[s].symbol)
 
 
-cm = Crypto_Market('Greece')
+#cm = Crypto_Market()
 #cm.printAllCryptoNames()
-cm.getCryptoCoinAttributes('BTC', datetime(2020,1,1)).printCrypto()
+#cm.getCryptoCoinAttributes('BTC', datetime(2020,1,1)).printCrypto()
 
 #filename = gcd.get_filename(from_symbol, to_symbol, exchange, datetime_interval, datetime.now().date().isoformat())
 #btc = Cryptocoin.createDict(gcd.get_filename(from_symbol, to_symbol, exchange, datetime_interval, datetime.now().date().isoformat()))
