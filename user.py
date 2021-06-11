@@ -47,8 +47,8 @@ class User():
         
     def buy(self, itemsToBuy):
         transactionList = []
-        # itemsToBuy = Dictionary with the stock/crypto object as key and a tuple 
-        # consisted of (ammount, public) as value
+        # itemsToBuy = Dictionary with the stock/crypto object as key and 
+        # a tuple consisted of (ammount, public) as value
         for item in itemsToBuy:
             transactionList.append(transactions.Transaction(self, item, itemsToBuy[item][0],itemsToBuy[item][1]))
 

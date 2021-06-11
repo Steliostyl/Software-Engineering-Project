@@ -1,8 +1,9 @@
 import pandas as pd
 import get_crypto_data as gcd
 import csv
-from datetime import datetime
+from datetime import datetime, date
 from matplotlib import style
+import user
 
 from_symbol = 'BTC'
 to_symbol = 'USD'
@@ -15,14 +16,9 @@ class Crypto_Coin():
         self.symbol = symbol
         self.name = name
         self.dailyValues = dailyValues
-
-    def filterCryptoData(self, startingDate):
-        tempDailyCryptoValues = {}
-        for val in self.dailyValues:
-            #print(type(val))
-            if val>=startingDate :
-                tempDailyCryptoValues[val] = self.dailyValues[val]
-        return Crypto_Coin(self.name, self.symbol, tempDailyCryptoValues)
+        
+    def getCurrentPrice(self):
+        return transactions.round_decimals_up(self.dailyValues[list(self.dailyValues)[len(list(self.dailyValues))-1]]['Close'], 2)
 
     def printCrypto(self, formatted=True):
         print('--Crypto Coin information--\nName:',self.name, '\nSymbol:', self.symbol,'\nDaily Data:')
@@ -36,11 +32,11 @@ class Crypto_Coin():
             print(f"{key.year}-{formatedMonth}-{formatedDay} {self.dailyValues[key]}")
 
 class Crypto_Market():
-    def __init__(self, country):
+    def __init__(self):
         self.cryptoCoins = {}
         self.getAllCryptoData()
     
-    def createDict(self, filename):
+    def createCryptoFromCSV(self, filename):
         with open(filename, mode='r') as csv_file:
             csv_reader = csv.DictReader(csv_file)
             line_count = 0
@@ -57,18 +53,24 @@ class Crypto_Market():
                 tempDailyCryptoValues['volumefrom'] = row['volumefrom']
                 tempDailyCryptoValues['volumeto'] = row['volumeto']
                 #Convert row['datetime'] from string to datetime
-                cryptocoinDict[datetime.strptime(row['datetime'], '%Y-%m-%d')] = tempDailyCryptoValues
+                tmp = datetime.strptime(row['datetime'], '%Y-%m-%d')
+                cryptocoinDict[date(tmp.year,tmp.month,tmp.day)] = tempDailyCryptoValues
                 line_count += 1
         #print(f'Processed {line_count} lines.')
         cryptocoin = Crypto_Coin(name, from_symbol, cryptocoinDict)
         return cryptocoin
+    
+    def getCryptoAttributes(self, symbol, start = date(2020,1,1), end = date.today()):
+        tempDailyStockValues = {}
+        for val in self.cryptoCoins[symbol].dailyValues:
+            print(type(start))
+            if (val >= start) & (val <= end):
+                tempDailyStockValues[val] = self.cryptoCoins[symbol].dailyValues[val]
+        return Crypto_Coin(self.cryptoCoins[symbol].name, self.cryptoCoins[symbol].symbol, tempDailyStockValues)
 
     def getAllCryptoData(self):
         tempfilename = gcd.get_filename(from_symbol, to_symbol, exchange, datetime_interval, datetime.now().date().isoformat())
-        self.cryptoCoins[from_symbol] = self.createDict(tempfilename)
-
-    def getCryptoCoinAttributes(self, symbol, startingDate):
-        return self.cryptoCoins[symbol].filterCryptoData(startingDate)
+        self.cryptoCoins[from_symbol] = self.createCryptoFromCSV(tempfilename)
 
     def printAllCryptoNames(self):
         for s in self.cryptoCoins:
@@ -77,8 +79,8 @@ class Crypto_Market():
 
 #cm = Crypto_Market()
 #cm.printAllCryptoNames()
-#cm.getCryptoCoinAttributes('BTC', datetime(2020,1,1)).printCrypto()
+#cm.getCryptoAttributes('BTC', date(2021,1,1)).printCrypto()
 
 #filename = gcd.get_filename(from_symbol, to_symbol, exchange, datetime_interval, datetime.now().date().isoformat())
-#btc = Cryptocoin.createDict(gcd.get_filename(from_symbol, to_symbol, exchange, datetime_interval, datetime.now().date().isoformat()))
+#btc = Cryptocoin.createCryptoFromCSV(gcd.get_filename(from_symbol, to_symbol, exchange, datetime_interval, datetime.now().date().isoformat()))
 #btc.printCrypto()

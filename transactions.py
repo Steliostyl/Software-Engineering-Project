@@ -2,9 +2,7 @@ from datetime import datetime, date
 import math
 
 def round_decimals_up(number:float, decimals:int=2):
-    """
-    Returns a value rounded up to a specific number of decimal places.
-    """
+    #Returns a value rounded up to a specific number of decimal places.
     if not isinstance(decimals, int):
         raise TypeError("decimal places must be an integer")
     elif decimals < 0:
@@ -17,18 +15,19 @@ def round_decimals_up(number:float, decimals:int=2):
 
 class Transaction():
     def __init__(self, user, itemBought, ammountBought, public):
-        self.ammountBought = ammountBought
+        self.user = user
         self.itemBought = itemBought
+        self.ammountBought = ammountBought
         self.public = public
         self.ID = len(user.tradingHistory)
         #self.price = itemBought.dailyValues[datetime.now().date().isoformat()]['Close']
-        itemBought.printStock()
-        self.price = itemBought.dailyValues[date(2021, 6, 1)]['Close']
+        #itemBought.printStock()
+        self.price = round_decimals_up(itemBought.getCurrentPrice()*ammountBought)
         self.payment = None
         self.dateTime = datetime.now()
 
     def printTransaction(self):
-        print('Bought:',self.ammountBought)
+        print('Bought:',self.ammountBought, 'shares of', self.itemBought.name, 'for', self.price, 'at' , self.dateTime)
 
 class Payment():
     def __init__(self, user, price, paymentMethod, transactionList):
@@ -42,12 +41,14 @@ class Payment():
         print('Payment for buying:')
         totalSum = 0
         for transaction in transactionList:
-            print(transaction.itemBought.symbol, transaction.price*transaction.ammountBought, '$')
-            totalSum += transaction.price * transaction.ammountBought
+            transaction.printTransaction()
+            totalSum += transaction.price
             
         totalSum = round_decimals_up(totalSum)
         print('Total price:', totalSum)
         ans = paymentMethod.pay(totalSum)
-        print(ans)
+        print(ans[1])
         if ans[0] == True:
+            user.tradingHistory.extend(transactionList) # Adds transactions to user's Trading History
             return Payment(user, totalSum, paymentMethod, transactionList)
+        return ans

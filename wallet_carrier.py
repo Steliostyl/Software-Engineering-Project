@@ -48,7 +48,7 @@ class Carrier():
         if self.verifyCredentials(credentials)[0] == True:
             if self.accounts[credentials[0]].balance >= ammount :
                 self.accounts[credentials[0]].balance = self.accounts[credentials[0]].balance - ammount
-                print(self.accounts[credentials[0]].balance)
+                #print(self.accounts[credentials[0]].balance)
                 return (True, 'Payment successful')
             else:
                 return (False, 'Not enough funds in account')

@@ -3,12 +3,28 @@ import matplotlib.pyplot as plt
 from matplotlib import style
 import pandas as pd
 import pandas_datareader.data as web
+import user
+import transactions
+
+stock_Markets = {}
+
+def getMarketsInCountry(country):
+    marketsInCountry = []
+    for stockMarket in stock_Markets:
+        if stockMarket.country == country:
+            marketsInCountry.append(stockMarket)
+    return marketsInCountry
 
 class Stock():
-    def __init__(self, name, symbol, dailyValues):
+    def __init__(self, name, symbol, dailyValues, country, sectors = []):
         self.symbol = symbol
         self.name = name
         self.dailyValues = dailyValues
+        self.country = country
+        self.sectors = sectors
+    
+    def getCurrentPrice(self):
+        return transactions.round_decimals_up(self.dailyValues[list(self.dailyValues)[len(list(self.dailyValues))-1]]['Close'], 2)
 
     def printStock(self, formatted=True):
         print('--Stock information--\nName:',self.name, '\nSymbol:', self.symbol,'\nDaily Data:')
@@ -22,53 +38,60 @@ class Stock():
             print(f"{key.year}-{formatedMonth}-{formatedDay} {self.dailyValues[key]}")
 
 class Stock_Market():
-    def __init__(self, country):
+    def __init__(self, country, index):
+        self.index = index
         self.country = country
         self.market_indexes = []
         self.stocks = {}
         self.getAllStocksData()
+        stock_Markets[self.index] = self
     
     def dfToDictCustom(self, df, tempDict):
         finalDict = {}
-        #print(tempDict)
         for key in tempDict:
-            #print("Key: ", key)
-            #print(tempDict)
             finalDict[dt.date(key.year, key.month, key.day)] = tempDict[key]
-        #print(finalDict)
         return finalDict
 
-    def getStockDataFromAPI(self, name, symbol, start, end):
+    def getStockDataFromAPI(self, name, symbol, start, end, country):
         dailyValues = {}
         style.use('ggplot')
         df = web.DataReader(symbol, 'yahoo', start, end)
-        #df.index = pd.to_datetime(df.index).date()
-        #print(df.index, type(df.index))
         tempDict = df.to_dict(orient='index')
         finaldict = self.dfToDictCustom(df, tempDict)
-        #print(finaldict)
-        #df.reset_index(inplace=True,drop=False)
-        #df['Date'] = pd.to_datetime(df['Date']).dt.date
-        #print(df['Date'][0],type(df['Date'][0]))
-
-        tempStock = Stock(name, symbol, finaldict)
+        tempStock = Stock(name, symbol, finaldict, country)
         self.stocks[symbol] = tempStock
 
     def getAllStocksData(self):
-        tsla    = ['Tesla Inc', 'TSLA']
-        amd     = ['Advanced Micro Devices, Inc.', 'AMD']
-        googl   = ['Alphabet Inc.','GOOGL']
-        fb      = ['Facebook, Inc.','FB']
-        zm      = ['Zoom Video Communications, Inc.','ZM']
-        czr     = ['Caesars Entertainment Inc','CZR']
-        cat     = ['Caterpillar Inc.','CAT']
-        stocksToGet = [tsla, amd, googl, fb, zm, czr, cat]
+        tsla    = ['Tesla Inc', 'TSLA', 'USA']
+        amd     = ['Advanced Micro Devices, Inc.', 'AMD', 'USA']
+        googl   = ['Alphabet Inc.','GOOGL', 'USA']
+        fb      = ['Facebook, Inc.','FB', 'USA']
+        zm      = ['Zoom Video Communications, Inc.','ZM', 'USA']
+        czr     = ['Caesars Entertainment Inc','CZR', 'USA']
+        cat     = ['Caterpillar Inc.','CAT', 'USA']
+        opap    = ['Greek Organization of Football Prognostics S.A.','OPAP.AT', 'Greece']
+        asml    = ['ASML Holding', 'asml', 'Netherlands']
+        paypal  = ['Paypal Holdings Inc','PYPL', 'USA']
+        nbg     = ['National Bank of Greece S.A.', 'ETE.AT', 'Greece']
+        plaisio = ['Plaisio Computers S.A.', 'PlAIS.AT', 'Greece']
+        moh     = ['Motor Oil (Hellas) Corinth Refineries S.A.', 'MOH.AT', 'Greece']
+
+        if self.index == 'NASDAQ':
+            stocksToGet = [zm, asml, paypal]
+        elif self.index == 'S&P 500':
+            stocksToGet = [tsla, amd, googl, fb, czr, cat]
+        elif self.index == 'ATG':
+            stocksToGet = [opap, nbg, plaisio, moh]
         
         for aStock in stocksToGet:
-            tmp = self.getStockDataFromAPI(aStock[0], aStock[1], dt.datetime(2021, 6, 1), dt.datetime.now())
+            tmp = self.getStockDataFromAPI(aStock[0], aStock[1], dt.datetime(2020, 1, 1), dt.datetime.now(), aStock[2])
 
-    def getStockAttributes(self, symbol):
-        return self.stocks[symbol]
+    def getStockAttributes(self, symbol, start = dt.date(2020,1,1), end = dt.date.today()):
+        tempDailyStockValues = {}
+        for val in self.stocks[symbol].dailyValues:
+            if (val >= start) & (val <= end) :
+                tempDailyStockValues[val] = self.stocks[symbol].dailyValues[val]
+        return Stock(self.stocks[symbol].name, self.stocks[symbol].symbol, tempDailyStockValues, self.stocks[symbol].country)
 
     def printAllStockNames(self):
         for s in self.stocks:
